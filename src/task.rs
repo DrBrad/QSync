@@ -9,18 +9,18 @@ use std::thread::JoinHandle;
 use crate::delay::Delay;
 
 pub struct Task {
-    tasks: Vec<Pin<Box<dyn Future<Output = ()> + Send>>>
-    //tasks: Arc<Mutex<Vec<Pin<Box<dyn Future<Output = ()> + Send>>>>>,
-    //running: Arc<AtomicBool>
+    //tasks: Vec<Pin<Box<dyn Future<Output = ()> + Send>>>
+    tasks: Arc<Mutex<Vec<Pin<Box<dyn Future<Output = ()> + Send>>>>>,
+    running: Arc<AtomicBool>
 }
 
 impl Task {
 
     pub fn new() -> Self {
         Self {
-            tasks: Vec::new()
-            //tasks: Arc::new(Mutex::new(Vec::new())),
-            //running: Arc::new(AtomicBool::new(false))
+            //tasks: Vec::new()
+            tasks: Arc::new(Mutex::new(Vec::new())),
+            running: Arc::new(AtomicBool::new(false))
         }
     }
 
@@ -36,9 +36,9 @@ impl Task {
     where
         F: Future<Output = ()> + Send + 'static
     {
-        self.tasks.push(Box::pin(fut));
-        //self.tasks.lock().as_mut().unwrap().push(Box::pin(fut));
-        //self.run();
+        //self.tasks.push(Box::pin(fut));
+        self.tasks.lock().as_mut().unwrap().push(Box::pin(fut));
+        self.run();
     }
 
 
@@ -61,7 +61,8 @@ impl Task {
         unsafe { Waker::from_raw(raw_waker()) }
     }
 
-    pub fn run(&mut self) {
+    fn run(&mut self) {
+        /*
         let waker = Self::noop_waker();
         let mut cx = Context::from_waker(&waker);
 
@@ -88,6 +89,7 @@ impl Task {
                 last_check = Instant::now();
             }
         }
+        */
 
 
         /*
@@ -111,7 +113,6 @@ impl Task {
         */
 
 
-        /*
         if self.running.load(Ordering::Relaxed) {
             return;
         }
@@ -123,6 +124,9 @@ impl Task {
         thread::spawn(move || {
             let waker = Self::noop_waker();
             let mut cx = Context::from_waker(&waker);
+
+            let mut last_check = Instant::now();
+            let check_interval = Duration::from_millis(2);
 
             while !tasks.lock().unwrap().is_empty() {
                 let mut i = 0;
@@ -137,10 +141,15 @@ impl Task {
                         }
                     }
                 }
+
+                thread::sleep(check_interval);
+
+                if last_check.elapsed() > check_interval {
+                    last_check = Instant::now();
+                }
             }
 
             running.store(false, Ordering::Relaxed);
         });
-        */
     }
 }

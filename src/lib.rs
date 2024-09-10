@@ -31,11 +31,11 @@ mod tests {
             }
         });
 
-        task.run();
+        //task.run();
 
         loop {
-            println!("aaaaaaaaaaaaaaaaaa");
-            sleep(Duration::from_millis(1000));
+            //println!("aaaaaaaaaaaaaaaaaa");
+            //sleep(Duration::from_millis(1000));
         }
     }
 }
