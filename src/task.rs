@@ -61,8 +61,36 @@ impl Task {
         unsafe { Waker::from_raw(raw_waker()) }
     }
 
-    // Function to run tasks and manage their lifecycle
     pub fn run(&mut self) {
+        let waker = Self::noop_waker();
+        let mut cx = Context::from_waker(&waker);
+
+        let mut last_check = Instant::now();
+        let check_interval = Duration::from_millis(2);
+
+        while !self.tasks.is_empty() {
+            let mut i = 0;
+            while i < self.tasks.len() {
+                let poll = self.tasks.get_mut(i).unwrap().as_mut().poll(&mut cx);
+                match poll {
+                    Poll::Ready(_) => {
+                        self.tasks.remove(i);
+                    }
+                    Poll::Pending => {
+                        i += 1;
+                    }
+                }
+            }
+
+            thread::sleep(check_interval);
+
+            if last_check.elapsed() > check_interval {
+                last_check = Instant::now();
+            }
+        }
+
+
+        /*
         let waker = Self::noop_waker();
         let mut cx = Context::from_waker(&waker);
 
@@ -80,6 +108,9 @@ impl Task {
                 }
             }
         }
+        */
+
+
         /*
         if self.running.load(Ordering::Relaxed) {
             return;

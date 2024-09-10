@@ -1,3 +1,6 @@
+use std::time::Duration;
+use crate::task::Task;
+
 mod task;
 mod delay;
 
@@ -16,13 +19,13 @@ mod tests {
         let mut task = Task::new();
 
         task.spawn(async {
-            for n in 1..15 {
+            for n in 1..150 {
                 println!("1 test: {}", n);
                 Task::delay_for(Duration::from_millis(500)).await;
             }
         });
         task.spawn(async move {
-            for n in 1..15 {
+            for n in 1..150 {
                 println!("2 test: {}", n);
                 Task::delay_for(Duration::from_millis(500)).await;
             }
@@ -30,6 +33,16 @@ mod tests {
 
         task.run();
 
-        //loop {}
+        loop {
+            println!("aaaaaaaaaaaaaaaaaa");
+            sleep(Duration::from_millis(1000));
+        }
+    }
+}
+
+async fn test(){
+    for n in 1..15 {
+        println!("2 test: {}", n);
+        Task::delay_for(Duration::from_millis(500)).await;
     }
 }
