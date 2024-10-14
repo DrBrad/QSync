@@ -126,7 +126,7 @@ impl Task {
             let mut cx = Context::from_waker(&waker);
 
             let mut last_check = Instant::now();
-            let check_interval = Duration::from_millis(2);
+            let check_interval = Duration::from_millis(1);
 
             while !tasks.lock().unwrap().is_empty() {
                 let mut i = 0;
